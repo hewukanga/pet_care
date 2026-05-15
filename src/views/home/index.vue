@@ -724,8 +724,8 @@ const highlights = [
 /* ===== CTA ===== */
 .cta {
   max-width: 1200px;
-  margin: 0 var(--spacing-md);
-  padding: 0;
+  margin: 0 auto;
+  padding: 0 var(--spacing-md);
 
   &__inner {
     position: relative;
@@ -853,7 +853,6 @@ const highlights = [
   }
 
   .cta {
-    margin: 0 var(--spacing-sm);
 
     &__title {
       font-size: var(--font-2xl);
@@ -866,3 +865,5 @@ const highlights = [
   }
 }
 </style>
+
+
