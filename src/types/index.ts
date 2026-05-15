@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 全局类型定义
  * 定义项目中使用的核心数据结构和接口
  */
@@ -160,6 +160,10 @@ export interface BookingFormData {
   petType: PetType
   petBreed: string
   remark: string
+  /** 服务名称（可选） */
+  serviceName?: string
+  /** 价格（可选） */
+  price?: number
 }
 
 // ==================== 用户相关类型 ====================
@@ -182,3 +186,4 @@ export interface Banner {
   subtitle: string
   link?: string
 }
+

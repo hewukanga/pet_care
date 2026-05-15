@@ -22,3 +22,4 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+`n# 环境变量`n.env`n.env.local`n

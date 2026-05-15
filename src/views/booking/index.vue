@@ -1,4 +1,4 @@
-﻿<!--
+<!--
   预约服务页面
   优雅的预约表单：日期选择、时间段、宠物信息
 -->
@@ -49,7 +49,7 @@ async function handleSubmit() {
   form.serviceId = service.value.id
   submitting.value = true
   try {
-    await submitBooking({ ...form })
+    await submitBooking({ ...form, serviceName: service.value?.name ?? '', price: service.value?.price ?? 0 })
     toast.success('预约提交成功！')
     reset()
     cartStore.clearSelection()
@@ -557,3 +557,4 @@ function goSelectService() {
   }
 }
 </style>
+
