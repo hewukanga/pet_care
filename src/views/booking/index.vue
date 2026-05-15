@@ -1,6 +1,6 @@
 ﻿<!--
   预约服务页面
-  提供完整的预约表单：选择日期、时间段、填写宠物信息
+  优雅的预约表单：日期选择、时间段、宠物信息
 -->
 
 <script setup lang="ts">
@@ -20,12 +20,8 @@ const toast = useToast()
 const { form, errors, submitting, timeSlots, petTypeOptions, validate, reset } =
   useBookingForm()
 
-/** 当前选中服务 */
 const service = computed(() => cartStore.selectedService)
 
-/**
- * 生成未来7天的日期选项
- */
 const dateOptions = computed(() => {
   const dates: { label: string; value: string; weekday: string }[] = []
   const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
@@ -41,9 +37,6 @@ const dateOptions = computed(() => {
   return dates
 })
 
-/**
- * 提交预约
- */
 async function handleSubmit() {
   if (!validate()) {
     toast.error('请完善预约信息')
@@ -60,8 +53,7 @@ async function handleSubmit() {
     toast.success('预约提交成功！')
     reset()
     cartStore.clearSelection()
-    // 跳转到预约列表
-    setTimeout(() => router.push('/orders'), 1000)
+    setTimeout(() => router.push('/orders'), 1200)
   } catch {
     toast.error('预约失败，请稍后重试')
   } finally {
@@ -69,7 +61,6 @@ async function handleSubmit() {
   }
 }
 
-/** 返回服务列表选择服务 */
 function goSelectService() {
   router.push('/services')
 }
@@ -78,14 +69,15 @@ function goSelectService() {
 <template>
   <div class="booking-page">
     <div class="section-header">
-      <h2>预约服务</h2>
-      <p>选择服务和时间，为爱宠预约一次专业护理</p>
+      <h2 class="section-title">预约服务</h2>
+      <p class="section-subtitle">选择时间，为爱宠预约一次专业护理</p>
     </div>
 
-    <!-- 未选择服务时的提示 -->
-    <div v-if="!service" class="booking-page__empty">
+    <!-- 未选择服务 -->
+    <div v-if="!service" class="empty-state">
+      <span class="empty-state__icon">🛁</span>
       <p>请先从服务列表选择需要的服务项目</p>
-      <button class="btn-primary" @click="goSelectService">
+      <button class="btn-gradient" @click="goSelectService">
         去选择服务 →
       </button>
     </div>
@@ -94,21 +86,32 @@ function goSelectService() {
     <div v-else class="booking-card">
       <!-- 已选服务摘要 -->
       <div class="booking-card__service">
-        <span class="badge">{{
-          ServiceCategoryLabel[service.category]
-        }}</span>
-        <h3>{{ service.name }}</h3>
-        <div class="price-row">
-          <span class="price">{{ formatPrice(service.price) }}</span>
-          <span class="duration">⏱ 约{{ service.duration }}分钟</span>
+        <div class="service-summary">
+          <span class="service-summary__badge">{{
+            ServiceCategoryLabel[service.category]
+          }}</span>
+          <h3 class="service-summary__name">{{ service.name }}</h3>
+          <div class="service-summary__meta">
+            <span class="service-summary__price">{{
+              formatPrice(service.price)
+            }}</span>
+            <span class="service-summary__divider">·</span>
+            <span class="service-summary__duration">⏱ {{ service.duration }}分钟</span>
+          </div>
         </div>
-        <button class="change-btn" @click="goSelectService">更换服务</button>
+        <button class="change-btn" @click="goSelectService">
+          更换
+        </button>
       </div>
 
+      <!-- 表单区域 -->
       <div class="booking-card__form">
         <!-- 选择日期 -->
         <div class="form-group">
-          <label class="form-label">预约日期</label>
+          <label class="form-label">
+            <span class="form-label__icon">📅</span>
+            预约日期
+          </label>
           <div class="date-grid">
             <button
               v-for="d in dateOptions"
@@ -128,7 +131,10 @@ function goSelectService() {
 
         <!-- 选择时间段 -->
         <div class="form-group">
-          <label class="form-label">时间段</label>
+          <label class="form-label">
+            <span class="form-label__icon">🕐</span>
+            时间段
+          </label>
           <div class="time-grid">
             <button
               v-for="slot in timeSlots"
@@ -147,7 +153,10 @@ function goSelectService() {
 
         <!-- 宠物信息 -->
         <div class="form-group">
-          <label class="form-label">宠物名称</label>
+          <label class="form-label">
+            <span class="form-label__icon">🐾</span>
+            宠物名称
+          </label>
           <input
             v-model="form.petName"
             class="form-input"
@@ -188,24 +197,33 @@ function goSelectService() {
 
         <!-- 备注 -->
         <div class="form-group">
-          <label class="form-label">备注（选填）</label>
+          <label class="form-label">
+            <span class="form-label__icon">📝</span>
+            备注（选填）
+          </label>
           <textarea
             v-model="form.remark"
             class="form-textarea"
-            placeholder="如：特殊需求、注意事项等"
+            placeholder="如：特殊需求、注意事项、健康状况等"
             rows="3"
             maxlength="200"
           />
         </div>
       </div>
 
-      <!-- 提交 -->
+      <!-- 提交按钮 -->
       <button
         class="submit-btn"
         :disabled="submitting"
         @click="handleSubmit"
       >
-        {{ submitting ? '提交中…' : `确认预约 ${formatPrice(service.price)}` }}
+        <template v-if="submitting">
+          <span class="submit-btn__spinner" />
+          提交中…
+        </template>
+        <template v-else>
+          确认预约 · {{ formatPrice(service.price) }}
+        </template>
       </button>
     </div>
   </div>
@@ -214,110 +232,130 @@ function goSelectService() {
 <style scoped lang="scss">
 .section-header {
   text-align: center;
-  padding: var(--spacing-xl) 0 var(--spacing-lg);
-
-  h2 {
-    font-size: var(--font-2xl);
-    font-weight: 700;
-  }
-
-  p {
-    margin-top: var(--spacing-sm);
-    color: var(--color-text-secondary);
-  }
+  padding: var(--spacing-3xl) 0 var(--spacing-xl);
 }
 
 .booking-page {
   max-width: 720px;
   margin: 0 auto;
   padding: 0 var(--spacing-md);
+}
 
-  &__empty {
-    text-align: center;
-    padding: var(--spacing-2xl);
+.empty-state {
+  text-align: center;
+  padding: var(--spacing-3xl) var(--spacing-xl);
 
-    p {
-      color: var(--color-text-secondary);
-      margin-bottom: var(--spacing-lg);
-    }
+  &__icon {
+    font-size: 64px;
+    display: block;
+    margin-bottom: var(--spacing-md);
+    animation: float 3s ease-in-out infinite;
+  }
+
+  p {
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-xl);
+    font-size: var(--font-lg);
   }
 }
 
-.btn-primary {
-  padding: 10px 24px;
+.btn-gradient {
+  display: inline-flex;
+  padding: 12px 28px;
   border-radius: var(--radius-full);
-  background: var(--color-primary);
+  background: var(--color-primary-gradient);
   color: var(--color-white);
-  font-weight: 600;
+  font-weight: 700;
   font-size: var(--font-base);
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
+  transition: all var(--transition-base);
 
   &:hover {
-    background: var(--color-primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
   }
 }
 
 .booking-card {
   background: var(--color-white);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   padding: var(--spacing-xl);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-border-light);
 
   &__service {
-    position: relative;
-    padding-bottom: var(--spacing-lg);
-    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: var(--spacing-lg);
     margin-bottom: var(--spacing-lg);
+    background: linear-gradient(135deg, #fffbeb, #fef3c7);
+    border-radius: var(--radius-lg);
+  }
 
-    h3 {
-      font-size: var(--font-xl);
-      font-weight: 700;
-      margin: var(--spacing-sm) 0;
-    }
-
-    .price-row {
-      display: flex;
-      align-items: center;
-      gap: var(--spacing-md);
-    }
-
-    .price {
-      font-size: var(--font-xl);
-      font-weight: 800;
-      color: var(--color-danger);
-    }
-
-    .duration {
-      font-size: var(--font-sm);
-      color: var(--color-text-secondary);
-    }
-
-    .change-btn {
-      position: absolute;
-      top: 0;
-      right: 0;
-      font-size: var(--font-sm);
-      color: var(--color-primary);
-      padding: 4px 12px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--color-primary);
-
-      &:hover {
-        background: var(--color-primary-bg);
-      }
-    }
+  &__form {
+    padding: 0;
   }
 }
 
-.badge {
-  display: inline-block;
-  font-size: var(--font-xs);
-  padding: 2px 10px;
-  border-radius: var(--radius-full);
-  background: var(--color-primary-bg);
-  color: var(--color-primary-dark);
-  font-weight: 600;
+.service-summary {
+  &__badge {
+    display: inline-block;
+    font-size: var(--font-xs);
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+    background: rgba(245, 158, 11, 0.15);
+    color: #92400e;
+    font-weight: 600;
+    margin-bottom: var(--spacing-sm);
+  }
+
+  &__name {
+    font-size: var(--font-xl);
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-sm);
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+  }
+
+  &__price {
+    font-size: var(--font-xl);
+    font-weight: 800;
+    color: #dc2626;
+  }
+
+  &__divider {
+    color: var(--color-text-muted);
+  }
+
+  &__duration {
+    font-size: var(--font-sm);
+    color: var(--color-text-secondary);
+  }
 }
 
+.change-btn {
+  padding: 6px 16px;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #92400e;
+  font-size: var(--font-sm);
+  font-weight: 500;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+
+  &:hover {
+    background: rgba(245, 158, 11, 0.1);
+    border-color: rgba(245, 158, 11, 0.5);
+  }
+}
+
+/* 表单 */
 .form-group {
   margin-bottom: var(--spacing-lg);
 }
@@ -332,27 +370,39 @@ function goSelectService() {
 }
 
 .form-label {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: var(--font-sm);
   font-weight: 600;
   color: var(--color-text-primary);
   margin-bottom: var(--spacing-sm);
+
+  &__icon {
+    font-size: 15px;
+  }
 }
 
 .form-input,
 .form-textarea {
   width: 100%;
-  padding: 10px 14px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
+  padding: 11px 16px;
+  border: 2px solid var(--color-border-light);
+  border-radius: var(--radius-md);
   font-size: var(--font-base);
   background: var(--color-bg);
   outline: none;
-  transition: border-color 0.2s;
+  transition: all var(--transition-fast);
+  color: var(--color-text-primary);
+
+  &::placeholder {
+    color: var(--color-text-muted);
+  }
 
   &:focus {
     border-color: var(--color-primary);
     background: var(--color-white);
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
   }
 }
 
@@ -362,12 +412,12 @@ function goSelectService() {
 
 .form-error {
   display: block;
-  margin-top: 4px;
+  margin-top: 6px;
   font-size: var(--font-xs);
   color: var(--color-danger);
 }
 
-/* 日期选择网格 */
+/* 日期选择 */
 .date-grid {
   display: flex;
   gap: var(--spacing-sm);
@@ -380,42 +430,45 @@ function goSelectService() {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  padding: 10px 16px;
-  border-radius: var(--radius-sm);
-  border: 2px solid var(--color-border);
+  gap: 4px;
+  padding: 12px 18px;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--color-border-light);
   background: var(--color-white);
-  transition: all 0.2s;
+  transition: all var(--transition-fast);
 
   &__day {
-    font-size: var(--font-base);
-    font-weight: 600;
+    font-size: var(--font-lg);
+    font-weight: 700;
+    color: var(--color-text-primary);
   }
 
   &__week {
     font-size: var(--font-xs);
-    color: var(--color-text-secondary);
+    color: var(--color-text-muted);
   }
 
   &--active {
     border-color: var(--color-primary);
-    background: var(--color-primary-bg);
+    background: linear-gradient(135deg, #fffbeb, #fef3c7);
 
     .date-item__day {
-      color: var(--color-primary-dark);
+      color: #92400e;
     }
 
     .date-item__week {
       color: var(--color-primary);
+      font-weight: 600;
     }
   }
 
   &:hover:not(&--active) {
-    border-color: var(--color-primary-light);
+    border-color: rgba(245, 158, 11, 0.3);
+    background: var(--color-bg);
   }
 }
 
-/* 时间段选择网格 */
+/* 时间段选择 */
 .time-grid {
   display: flex;
   flex-wrap: wrap;
@@ -423,44 +476,70 @@ function goSelectService() {
 }
 
 .time-item {
-  padding: 8px 14px;
+  padding: 10px 18px;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--color-border);
+  border: 2px solid var(--color-border-light);
   background: var(--color-white);
   font-size: var(--font-sm);
-  transition: all 0.2s;
+  font-weight: 500;
+  transition: all var(--transition-fast);
+  color: var(--color-text-secondary);
 
   &--active {
     border-color: var(--color-primary);
-    background: var(--color-primary-bg);
-    color: var(--color-primary-dark);
-    font-weight: 600;
+    background: linear-gradient(135deg, #fffbeb, #fef3c7);
+    color: #92400e;
+    font-weight: 700;
   }
 
   &:hover:not(&--active) {
-    border-color: var(--color-primary-light);
+    border-color: rgba(245, 158, 11, 0.3);
   }
 }
 
+/* 提交按钮 */
 .submit-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
   width: 100%;
-  padding: 14px 0;
+  padding: 16px 0;
   border-radius: var(--radius-md);
-  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  background: var(--color-primary-gradient);
   color: var(--color-white);
   font-size: var(--font-lg);
   font-weight: 700;
-  margin-top: var(--spacing-md);
-  transition: opacity 0.2s;
+  margin-top: var(--spacing-lg);
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
+  transition: all var(--transition-base);
 
   &:hover:not(:disabled) {
-    opacity: 0.9;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
   }
 
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
   }
+
+  &__spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 @media (max-width: 768px) {
@@ -470,8 +549,11 @@ function goSelectService() {
   }
 
   .date-item {
-    padding: 8px 12px;
+    padding: 10px 14px;
+
+    &__day {
+      font-size: var(--font-base);
+    }
   }
 }
 </style>
-
