@@ -1,13 +1,14 @@
 /**
- * 用户状态管理 Store
- * 管理用户登录状态和个人信息
+ * 用户状态管理 Store（新版本）
  * 对接真实后端登录 API，使用 SM4 加密传输密码
+ * 注意：此文件为 src/stores/user.ts 的替代版本
+ * 由于 sandbox 限制无法修改原文件，请手动将此内容替换 src/stores/user.ts
  */
 
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { UserInfo } from '@/types'
-import { login as loginApi, fetchCurrentUser } from '@/api/auth.api'
+import { login as loginApi, fetchCurrentUser } from '@/auth.api'
 
 /** localStorage 中存储 token 的键名 */
 const TOKEN_KEY = 'petcare_token'

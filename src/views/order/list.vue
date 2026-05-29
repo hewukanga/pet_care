@@ -9,10 +9,12 @@ import type { Booking } from '@/types'
 import { BookingStatus, BookingStatusLabel } from '@/types'
 import { fetchBookingList, cancelBooking } from '@/api/booking.api'
 import { useToast } from '@/composables/useToast'
-import { formatPrice } from '@/utils/format'
+import { useUserStore } from '@/stores/user'
+import { formatPriceFromYuan } from '@/utils/format'
 import { formatDateTime } from '@/utils/date'
 
 const toast = useToast()
+const userStore = useUserStore()
 
 const bookings = ref<Booking[]>([])
 const loading = ref(false)
@@ -44,7 +46,7 @@ function statusIcon(status: BookingStatus): string {
 async function loadBookings() {
   loading.value = true
   try {
-    const result = await fetchBookingList({ page: 1, pageSize: 20 })
+    const result = await fetchBookingList({ page: 1, pageSize: 20 }, userStore.token)
     bookings.value = result.records
   } finally {
     loading.value = false
@@ -52,7 +54,7 @@ async function loadBookings() {
 }
 
 async function handleCancel(id: string) {
-  const ok = await cancelBooking(id)
+  const ok = await cancelBooking(id, userStore.token)
   if (ok) {
     toast.success('预约已取消')
     loadBookings()
@@ -135,7 +137,7 @@ onMounted(() => {
           <div class="order-card__price">
             <span class="order-card__price-label">合计</span>
             <span class="order-card__price-value">{{
-              formatPrice(booking.price)
+              formatPriceFromYuan(booking.price)
             }}</span>
           </div>
           <div class="order-card__actions">

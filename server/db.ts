@@ -77,3 +77,14 @@ export async function closePool() {
 }
 
 export default pool
+
+/**
+ * 执行参数化查询并返回单行结果
+ * @param text SQL 查询语句
+ * @param params 查询参数
+ * @returns 单行结果或 null
+ */
+export async function queryOne(text: string, params?: unknown[]) {
+  const result = await query(text, params)
+  return result.rows[0] || null
+}

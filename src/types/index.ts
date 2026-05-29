@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 全局类型定义
  * 定义项目中使用的核心数据结构和接口
  */
@@ -174,6 +174,8 @@ export interface UserInfo {
   nickname: string
   avatar: string
   phone: string
+  /** 认证 token */
+  token: string
 }
 
 // ==================== 轮播图类型 ====================
@@ -185,5 +187,36 @@ export interface Banner {
   title: string
   subtitle: string
   link?: string
+}
+
+
+// ==================== 评价相关类型 ====================
+
+/** 评价信息 */
+export interface Review {
+  id: string
+  /** 用户名 */
+  userName: string
+  /** 头像 */
+  avatar: string
+  /** 服务名称 */
+  serviceName: string
+  /** 评分 (1-5) */
+  rating: number
+  /** 评价内容 */
+  content: string
+  /** 标签图片列表 */
+  images: string[]
+  /** 宠物类型 */
+  petType: string
+  /** 创建时间 */
+  createdAt: string
+}
+
+/** 评价统计 */
+export interface ReviewStats {
+  averageRating: number
+  totalCount: number
+  distribution: Record<number, number>
 }
 

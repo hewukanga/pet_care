@@ -27,6 +27,7 @@ const navItems = [
   { label: '首页', path: '/' },
   { label: '服务项目', path: '/services' },
   { label: '预约服务', path: '/booking' },
+  { label: '客户评价', path: '/reviews' },
 ]
 
 /** 判断当前路由是否激活 */

@@ -4,18 +4,15 @@
  */
 
 import { ref, reactive, computed } from 'vue'
-import { useCartStore } from '@/stores/cart'
 import type { BookingFormData } from '@/types'
 import { PetType } from '@/types'
 import { PET_TYPE_OPTIONS, TIME_SLOTS } from '@/constants/service.const'
 import { isNotEmpty } from '@/utils/validator'
 
-export function useBookingForm() {
-  const cartStore = useCartStore()
-
+export function useBookingForm(initialServiceId?: string) {
   /** 表单数据 */
   const form = reactive<BookingFormData>({
-    serviceId: cartStore.selectedService?.id ?? '',
+    serviceId: initialServiceId ?? '',
     bookingDate: '',
     timeSlot: '',
     petName: '',

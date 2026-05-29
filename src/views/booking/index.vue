@@ -9,16 +9,18 @@ import { useRouter } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
 import { useBookingForm } from '@/composables/useBookingForm'
 import { useToast } from '@/composables/useToast'
+import { useUserStore } from '@/stores/user'
 import { submitBooking } from '@/api/booking.api'
 import { ServiceCategoryLabel } from '@/types'
-import { formatPrice } from '@/utils/format'
+import { formatPriceFromYuan } from '@/utils/format'
 import { formatDate } from '@/utils/date'
 
 const router = useRouter()
 const cartStore = useCartStore()
 const toast = useToast()
+const userStore = useUserStore()
 const { form, errors, submitting, timeSlots, petTypeOptions, validate, reset } =
-  useBookingForm()
+  useBookingForm(cartStore.selectedService?.id)
 
 const service = computed(() => cartStore.selectedService)
 
@@ -49,7 +51,7 @@ async function handleSubmit() {
   form.serviceId = service.value.id
   submitting.value = true
   try {
-    await submitBooking({ ...form, serviceName: service.value?.name ?? '', price: service.value?.price ?? 0 })
+    await submitBooking({ ...form, serviceName: service.value?.name ?? '', price: service.value?.price ?? 0 }, userStore.token)
     toast.success('预约提交成功！')
     reset()
     cartStore.clearSelection()
@@ -93,7 +95,7 @@ function goSelectService() {
           <h3 class="service-summary__name">{{ service.name }}</h3>
           <div class="service-summary__meta">
             <span class="service-summary__price">{{
-              formatPrice(service.price)
+              formatPriceFromYuan(service.price)
             }}</span>
             <span class="service-summary__divider">·</span>
             <span class="service-summary__duration">⏱ {{ service.duration }}分钟</span>
@@ -222,7 +224,7 @@ function goSelectService() {
           提交中…
         </template>
         <template v-else>
-          确认预约 · {{ formatPrice(service.price) }}
+          确认预约 · {{ formatPriceFromYuan(service.price) }}
         </template>
       </button>
     </div>

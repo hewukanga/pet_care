@@ -9,7 +9,7 @@ import { useRouter } from 'vue-router'
 import type { ServiceItem, Banner } from '@/types'
 import { ServiceCategory, ServiceCategoryLabel, PetTypeLabel } from '@/types'
 import { fetchHotServices } from '@/api/service.api'
-import { formatPrice } from '@/utils/format'
+import { formatPriceFromYuan } from '@/utils/format'
 
 const router = useRouter()
 
@@ -188,10 +188,10 @@ const highlights = [
           <div class="service-card__footer">
             <div class="service-card__price">
               <span class="service-card__price-current">{{
-                formatPrice(service.price)
+                formatPriceFromYuan(service.price)
               }}</span>
               <span v-if="service.originalPrice" class="service-card__price-original">{{
-                formatPrice(service.originalPrice)
+                formatPriceFromYuan(service.originalPrice)
               }}</span>
             </div>
             <span class="service-card__pets">

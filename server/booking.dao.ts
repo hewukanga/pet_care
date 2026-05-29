@@ -2,6 +2,7 @@
  * 预约数据访问层
  * 封装所有预约相关的数据库操作
  * 使用参数化查询防止 SQL 注入
+ * 所有操作需绑定登录用户ID
  */
 
 import { query, getClient } from './db'
@@ -20,7 +21,7 @@ export interface BookingRecord {
   remark: string
   status: string
   price: number
-  user_id: string | null
+  user_id: string
   created_at: string
   updated_at: string
 }
@@ -36,14 +37,12 @@ export interface CreateBookingParams {
   petBreed: string
   remark?: string
   price: number
-  userId?: string | null
+  userId: string
 }
 
 /**
  * 创建预约
- * 使用数据库函数生成订单编号，一条 SQL 完成插入并返回完整记录
- *
- * @param params 预约参数
+ * @param params 预约参数（含登录用户ID）
  * @returns 创建的预约记录
  */
 export async function createBooking(params: CreateBookingParams): Promise<BookingRecord> {
@@ -68,7 +67,7 @@ export async function createBooking(params: CreateBookingParams): Promise<Bookin
     params.petBreed,
     params.remark || '',
     params.price,
-    params.userId || null,
+    params.userId,
   ])
 
   return result.rows[0] as BookingRecord
@@ -76,42 +75,37 @@ export async function createBooking(params: CreateBookingParams): Promise<Bookin
 
 /**
  * 分页查询预约列表
- * （匿名用户可按订单号查询自己的预约）
- *
+ * 默认只查询当前登录用户的预约
  * @param page 页码
  * @param pageSize 每页数量
- * @param userId 可选用户ID
- * @param orderNo 可选订单号（匿名查询）
+ * @param userId 当前登录用户ID（必填）
+ * @param orderNo 可选订单号
  * @returns 预约列表和总数
  */
 export async function fetchBookingList(
   page: number,
   pageSize: number,
-  userId?: string | null,
+  userId: string,
   orderNo?: string
 ): Promise<{ records: BookingRecord[]; total: number }> {
   const conditions: string[] = []
   const params: unknown[] = []
   let paramIndex = 1
 
-  if (userId) {
-    conditions.push(`user_id = $${paramIndex++}`)
-    params.push(userId)
-  }
+  conditions.push(`user_id = $${paramIndex++}`)
+  params.push(userId)
 
   if (orderNo) {
     conditions.push(`order_no = $${paramIndex++}`)
     params.push(orderNo)
   }
 
-  const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
+  const whereClause = `WHERE ${conditions.join(' AND ')}`
 
-  // 查询总数
   const countSql = `SELECT COUNT(*) AS total FROM bookings ${whereClause}`
   const countResult = await query(countSql, params)
   const total = parseInt(countResult.rows[0].total, 10)
 
-  // 分页查询列表
   const offset = (page - 1) * pageSize
   const listSql = `
     SELECT * FROM bookings
@@ -129,24 +123,22 @@ export async function fetchBookingList(
 }
 
 /**
- * 取消预约（仅限 PENDING 状态）
- * 使用事务确保原子性：先检查状态再更新
- *
+ * 取消预约
  * @param id 预约ID
- * @param orderNo 订单编号（用于匿名用户校验）
+ * @param userId 当前登录用户ID
+ * @param orderNo 订单编号
  * @returns 是否取消成功
  */
-export async function cancelBooking(id: string, orderNo?: string): Promise<boolean> {
+export async function cancelBooking(id: string, userId: string, orderNo?: string): Promise<boolean> {
   const client = await getClient()
 
   try {
     await client.query('BEGIN')
 
-    // 锁定行并检查状态
-    const conditions = ['id = $1']
-    const lockParams: unknown[] = [id]
+    const conditions = ['id = $1', 'user_id = $2']
+    const lockParams: unknown[] = [id, userId]
     if (orderNo) {
-      conditions.push('order_no = $2')
+      conditions.push('order_no = $3')
       lockParams.push(orderNo)
     }
 
@@ -168,7 +160,6 @@ export async function cancelBooking(id: string, orderNo?: string): Promise<boole
       return false
     }
 
-    // 更新状态
     const updateSql = `
       UPDATE bookings SET status = 'CANCELLED'
       WHERE ${conditions.join(' AND ')}

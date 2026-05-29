@@ -4,14 +4,21 @@
  */
 
 /**
- * 格式化金额为人民币显示
- * @param amount 金额（分或元，根据 isFen 判断）
- * @param isFen 是否为分单位，默认 false（元）
+ * 格式化元单位的金额为人民币显示
+ * @param amount 金额（元）
  * @returns 格式化后的金额字符串，如 ¥128.00
  */
-export function formatPrice(amount: number, isFen = false): string {
-  const yuan = isFen ? amount / 100 : amount
-  return `¥${yuan.toFixed(2)}`
+export function formatPriceFromYuan(amount: number): string {
+  return `¥${amount.toFixed(2)}`
+}
+
+/**
+ * 格式化分单位的金额为人民币显示
+ * @param amount 金额（分）
+ * @returns 格式化后的金额字符串，如 ¥128.00
+ */
+export function formatPriceFromFen(amount: number): string {
+  return `¥${(amount / 100).toFixed(2)}`
 }
 
 /**

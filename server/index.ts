@@ -7,7 +7,10 @@ import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
 import { testConnection, closePool } from './db'
+import { seedDefaultAdmin } from './user.dao'
 import bookingRoutes from './booking.routes'
+import reviewRoutes from './review.routes'
+import userRoutes from './user.routes'
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -31,8 +34,14 @@ app.use(cors({
 
 // ============ 路由 ============
 
+/** 用户认证相关接口 */
+app.use('/api', userRoutes)
+
 /** 预约相关接口 */
 app.use('/api', bookingRoutes)
+
+/** 评价相关接口 */
+app.use('/api', reviewRoutes)
 
 /** 健康检查 */
 app.get('/api/health', async (_req, res) => {
@@ -61,10 +70,21 @@ async function start() {
   console.log('正在连接数据库…')
   const dbOk = await testConnection()
 
+  // 初始化默认管理员账号的SM4密码
+  if (dbOk) {
+    try {
+      await seedDefaultAdmin()
+    } catch (error) {
+      console.error('初始化默认管理员密码失败:', error)
+    }
+  }
+
   app.listen(PORT, () => {
-    console.log(`\n🐾 PetCare API 服务已启动: http://localhost:${PORT}`)
+    console.log(`
+🐾 PetCare API 服务已启动: http://localhost:${PORT}`)
     console.log(`📋 数据库状态: ${dbOk ? '已连接' : '未连接（请检查 DATABASE_URL）'}`)
-    console.log(`🌐 环境: ${process.env.NODE_ENV || 'development'}\n`)
+    console.log(`🌐 环境: ${process.env.NODE_ENV || 'development'}
+`)
   })
 }
 

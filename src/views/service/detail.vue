@@ -10,7 +10,7 @@ import type { ServiceItem } from '@/types'
 import { ServiceCategoryLabel, PetTypeLabel } from '@/types'
 import { fetchServiceDetail } from '@/api/service.api'
 import { useCartStore } from '@/stores/cart'
-import { formatPrice } from '@/utils/format'
+import { formatPriceFromYuan } from '@/utils/format'
 
 const route = useRoute()
 const router = useRouter()
@@ -79,13 +79,13 @@ onMounted(() => {
           <!-- 价格区 -->
           <div class="detail-card__price">
             <div class="price-block">
-              <span class="price-current">{{ formatPrice(service.price) }}</span>
+              <span class="price-current">{{ formatPriceFromYuan(service.price) }}</span>
               <template v-if="service.originalPrice">
                 <span class="price-original">{{
-                  formatPrice(service.originalPrice)
+                  formatPriceFromYuan(service.originalPrice)
                 }}</span>
                 <span class="price-save">
-                  省{{ formatPrice(service.originalPrice - service.price) }}
+                  省{{ formatPriceFromYuan(service.originalPrice - service.price) }}
                 </span>
               </template>
             </div>
@@ -145,7 +145,7 @@ onMounted(() => {
         <div class="detail-card__sticky-bar">
           <div class="sticky-price">
             <span class="sticky-price__current">{{
-              formatPrice(service.price)
+              formatPriceFromYuan(service.price)
             }}</span>
           </div>
           <button class="sticky-book-btn" @click="goBooking">
